@@ -2,9 +2,80 @@ fn main() {
     basics();
     coping();
     tuples();
-
+    unit_type_struct();
+    rectangles();
+    method_fun();
 }
 
+fn  method_fun(){
+    #[derive(Debug)]
+    struct Rec {
+        w: u32,
+        h: u32
+    }
+
+    impl Rec {
+        fn area(&self) -> u32 {
+            &self.w * &self.h
+        }
+
+        fn can_hold(&self, o: &Rec) -> bool {
+            self.area() >= o.area()
+        }
+
+        fn square(i: u32) -> Self {
+            Self {
+                w: i,
+                h: i
+            }
+        }
+    }
+
+    // można mieć wiele bloków impl
+    impl Rec {
+        // new nie jest słowem kluczowym, więc od biedy można zrobić taki bieda konstruktor a'la
+        // record. Ma to swój urok.
+        fn new(w: u32, h: u32) -> Self {
+            Self{
+                w: w,
+                h: h
+            }
+        }
+    }
+
+    let rec = Rec::new(2, 4);
+    let sq = Rec::square(2);
+
+    println!("Area of {rec:?} is {0}", rec.area());
+    println!("Can {rec:?} hold {sq:?}? {0}", rec.can_hold(&sq));
+}
+
+fn rectangles(){
+    #[derive(Debug)]  // to idzie
+    struct Rectangle{
+        w: u32,
+        h: u32
+    };
+    fn area(r: &Rectangle) -> u32 {
+        r.w * r.h
+    }
+    let rec = Rectangle{
+        w: 3,
+        h: 4
+    };
+
+    println!("Area is {0}", area(&rec));
+    println!("Rec is {rec:?}"); // z tym. Taki domyślny toString
+    println!("Rec is {rec:#?}");
+    dbg!(&rec); // to idzie na stderr
+    
+}
+fn  unit_type_struct(){
+    struct AlwaysEq;
+    let aeq = AlwaysEq;
+
+    // println!("{0}", aeq);
+}
 
 fn tuples(){
     struct Color(i32, i32, i32);   
