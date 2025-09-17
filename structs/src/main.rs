@@ -72,9 +72,10 @@ fn rectangles(){
 }
 fn  unit_type_struct(){
     struct AlwaysEq;
-    let aeq = AlwaysEq;
+    let _aeq = AlwaysEq;
 
-    // println!("{0}", aeq);
+    // to nie zadziała, po aeq nie ma standardowego formatera
+    //  println!("{0}", _aeq);
 }
 
 fn tuples(){
@@ -133,6 +134,7 @@ fn basics() {
     };
 
     let baba_jaga = build_user(String::from("Chuj"), String::from("abrakadabrakonstantynopolitowianeczkatrzy@wskrócie.zwana"));
+    let pan_sowa = build_user_short(String::from("Pan Sowa"), String::from("radosc_z_chlopcami@domek.las"));
 
     print_user(jas);
     
@@ -141,6 +143,7 @@ fn basics() {
     print_user(malgosia);
  
     println!("{0} {1}", baba_jaga.email, baba_jaga.username);
+    println!("{0} {1}", pan_sowa.email, pan_sowa.username);
 }
 
 fn build_user(username: String, email: String) -> User {
@@ -151,6 +154,17 @@ fn build_user(username: String, email: String) -> User {
        sign_in_count: 0
     }
 }
+
+fn build_user_short(username: String, email: String) -> User{
+    User {
+        active: false,
+        username,
+        email,
+        sign_in_count: 0
+    }
+
+}
+
 
 struct User {
     active: bool,
