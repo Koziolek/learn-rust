@@ -67,6 +67,7 @@ fn rectangles(){
     println!("Area is {0}", area(&rec));
     println!("Rec is {rec:?}"); // z tym. Taki domyślny toString
     println!("Rec is {rec:#?}");
+    // println!(&rec); // to nie zadziała
     dbg!(&rec); // to idzie na stderr
     
 }
