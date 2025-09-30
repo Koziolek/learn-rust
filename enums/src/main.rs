@@ -25,9 +25,10 @@ fn main() {
     let _home3 = IpAddr3::V4(127, 0 , 0, 1);
     let _loopback3 = IpAddr3::V6(String::from("::1"));
 
-    let _home_struct = IpAddrStruct::V4(IpV4Addr{addr: String::from("127.0.0.1")});
-    let _loopback_struct = IpAddrStruct::V6(IpV6Addr{addr: String::from("127.0.0.1")});
-
+    let home_struct = IpAddrStruct::V4(IpV4Addr{addr: String::from("127.0.0.1")});
+    let loopback_struct = IpAddrStruct::V6(IpV6Addr{addr: String::from("127.0.0.1")});
+    home_struct.show();
+    loopback_struct.show();
 // ---- przykladowa implemantacja komunikatów
     let message_write = Message::Write(String::from("Hello"));
     message_write.call();
@@ -46,12 +47,122 @@ fn main() {
     let five = Some(5);
     let six = add_one(five);
     println!("{}", six.unwrap());
+    let none = None;
+    let none1= add_one(none);
+    // println!("{}", none1.unwrap()); // unwrap na none1 powoduje PANIC
+    println!("{:?}", none1); // przez debug
 
 // ---- any match
 
     let roll = 9;
     move_hero(roll);
 
+// ---- if let
+    let config_max = Some(3u8);
+    match config_max {
+        Some(max) => println!("maximum is {max}"),
+        _ => println!("nope")
+    }
+    // równoznaczne z 
+    if let Some(max) = config_max {
+        println!("maximum is {max}");
+    }  
+
+    let coin = Coin::Quarter(PlState::Mazowieckie);
+    let coin1 = Coin::Quarter(PlState::Dolnoslaskie);
+    else_let_match(&coin); // tu trochę magii z pożyczaniem, bo nie chce mi się wymyślać nazw
+                           // zmiennych
+    else_let_match(&Coin::Dime);
+
+// ---- else let 
+    let desc0 = describe_state_quarter0(&coin);
+    println!("{desc0:?}");
+    let desc01 = describe_state_quarter0(&coin1);
+    println!("{desc01:?}");
+    // refaktoryzacja 
+    let desc1 = describe_state_quarter1(&coin);
+    println!("{desc1:?}");
+    let desc11 = describe_state_quarter1(&coin1);
+    println!("{desc11:?}");
+    // refaktoryzacja 
+    let desc2 = describe_state_quarter2(&coin);
+    println!("{desc2:?}");
+    let desc21 = describe_state_quarter2(&coin1);
+    println!("{desc21:?}");
+
+
+
+}
+
+// ---- else let
+fn describe_state_quarter0(coin: &Coin) -> Option<String> {
+    if let Coin::Quarter(state) = coin {
+        if state.existed_in(1111) {
+             Some(format!("{state:?} is quite old place"))
+        } else {
+             Some(format!("{state:?} is old but not so old"))
+        }
+    } else {
+        None
+    }
+}
+// refaktoryzacja - rozdzielenie logiki wyboru rodzaju monety i wypisywania
+fn describe_state_quarter1(coin: &Coin) -> Option<String> {
+    let state = if let Coin::Quarter(state) = coin{
+        state
+    } else {
+        return None; // paskuda
+    };
+
+    if state.existed_in(1111) {
+        Some(format!("{state:?} is quite old place"))
+    } else {
+        Some(format!("{state:?} is old but not so old"))
+    }
+}
+// refaktoryzacja - uproszczenie pierwszego ifa do let else
+
+fn describe_state_quarter2(coin: &Coin) -> Option<String> {
+    let Coin::Quarter(state) = coin else {
+        return None;
+    }; 
+
+    if state.existed_in(1111) {
+        Some(format!("{state:?} is quite old place"))
+    } else {
+        Some(format!("{state:?} is old but not so old"))
+    }
+}
+
+// pomocnicze
+impl PlState {
+    fn existed_in(&self, year: u16) -> bool {
+        match self{
+            PlState::Dolnoslaskie => year >= 1100,
+            PlState::Mazowieckie => year >= 1300,
+        }
+    }
+
+}
+// ---- if let else pomocniczo
+fn else_let_match(coin: &Coin) -> &Coin{
+    let mut count = 0;
+   
+   //match coin{
+   //    Coin::Quarter(s) => println!("Have quater from {s:?}"),
+   //    _ => count += 1,
+   // }
+
+
+    // równoważne
+    if let Coin::Quarter(state) = coin {
+        println!("Have quater from {state:?}");
+    } else {
+        count += 1; 
+    }
+
+    println!("{count}");
+    coin
 }
 
 // ---- any match
@@ -81,7 +192,6 @@ enum PlState {
     Dolnoslaskie,
     Mazowieckie,
 }
-
 
 enum Coin {
     Penny,
@@ -115,7 +225,7 @@ impl Message {
     fn call(&self) {
         match self{
            Message::Quit => (),
-           Message::Move{x: _, y: _} => (),
+           Message::Move{x: a, y} => println!("Moving to x:{}, y:{}", a, y), // wnioskowanie nazw
            Message::Write(_v) => (),
            Message::Color(_r, _g, _b) => ()
         }
@@ -137,6 +247,14 @@ struct IpV6Addr{
     addr: String
 }
 
+impl IpAddrStruct {
+    fn show(&self) {
+        match self{
+            IpAddrStruct::V4(addr) => println!("{}", addr.addr),
+            IpAddrStruct::V6(addr) => println!("{}", addr.addr),
+        }
+    }
+}
 
 enum IpAddr2 {
     V4(String),
@@ -158,7 +276,14 @@ impl std::string::ToString for IpAddr2 {
     }
 }
 
-
+impl std::string::ToString for IpAddr3 {
+    fn to_string(&self) -> String {
+        match self {
+            IpAddr3::V4(a, b, c, d) => format!("{}.{}.{}.{}", a, b, c, d),
+            IpAddr3::V6(val) => format!("{})", val),
+        }
+    }
+}
 // ----- podstawy
 fn print_ip_addr(ip_addr: IpAddr){
     println!("ip {0} {1}", ip_addr.kind, ip_addr.address);
@@ -171,7 +296,11 @@ enum IpAddrKind{
 // offtopic – implementacja Display, ale bez importów, więc dużo pełnych nazw. 
 impl std::fmt::Display for IpAddrKind{
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "{}", self)
+        // write!(f, "{}", self) // -- wywolanie rekurencyjne bez stopu
+        match self {
+            IpAddrKind::V4 => f.write_str("V4"),
+            IpAddrKind::V6 => f.write_str("V6"),
+        }
     }
 }
 // end
